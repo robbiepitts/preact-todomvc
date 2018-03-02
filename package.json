@@ -4,16 +4,19 @@
 	"description": "TodoMVC done in Preact",
 	"main": "index.js",
 	"scripts": {
-		"start": "node ./build/dev-server.js",
+		"start": "NODE_ENV=dev node ./build/dev-server.js",
 		"build": "rm -rf dist && fm -d dist",
 		"watch": "rm -rf dist && NODE_ENV=dev fm -d dist"
 	},
-	"keywords": ["preact"],
+	"keywords": [
+		"preact"
+	],
 	"author": "Jason Miller <jason@developit.ca>",
 	"license": "MIT",
 	"devDependencies": {
-		"@filemonger/cli": "^0.2.3",
-		"@filemonger/main": "^0.4.2",
+		"@filemonger/cli": "^0.5.0",
+		"@filemonger/filtermonger": "^0.5.0",
+		"@filemonger/main": "^0.5.0",
 		"babel-core": "^6.5.2",
 		"babel-loader": "^6.2.3",
 		"babel-plugin-external-helpers": "^6.18.0",
@@ -26,9 +29,7 @@
 		"babel-preset-stage-0": "^6.5.0",
 		"cheerio": "^1.0.0-rc.2",
 		"compression": "^1.7.2",
-		"css-loader": "^0.26.0",
 		"express": "^4.16.2",
-		"extract-text-webpack-plugin": "^1.0.1",
 		"fb-watchman": "^2.0.0",
 		"fs-extra": "^5.0.0",
 		"gh-pages": "^0.12.0",
@@ -36,18 +37,13 @@
 		"mkdirp": "^0.5.1",
 		"ncp": "^2.0.0",
 		"node-sass": "^4.7.2",
-		"replace-bundle-webpack-plugin": "^1.0.0",
 		"rimraf": "^2.6.2",
 		"rollup": "^0.56.2",
 		"rollup-plugin-babel": "^2.6.1",
 		"rollup-plugin-commonjs": "^5.0.5",
 		"rollup-plugin-node-resolve": "^2.0.0",
-		"rollup-plugin-sass": "^0.6.0",
 		"rollup-plugin-uglify": "^3.0.0",
-		"style-loader": "^0.13.0",
-		"uglify-js": "^2.7.5",
-		"webpack": "^1.12.14",
-		"webpack-dev-server": "^1.14.1"
+		"uglify-js": "^2.7.5"
 	},
 	"dependencies": {
 		"preact": "^7.1.0",

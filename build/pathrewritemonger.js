@@ -1,11 +1,12 @@
-const { makeFilemonger, helpers } = require('@filemonger/main');
+const { make, helpers } = require('@filemonger/main');
 const cheerio = require('cheerio');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
-module.exports = makeFilemonger((srcDir$, destDir, { pattern, replacer }) =>
-	srcDir$.mergeMap(srcDir => {
-		return helpers.filesInDir(srcDir).mergeMap(entrypoint => {
+module.exports = make((srcDir, destDir, { pattern, replacer }) =>
+	helpers
+		.filesInDir(srcDir)
+		.mergeMap(entrypoint => {
 			const html = readFileSync(join(srcDir, entrypoint)).toString();
 			const $ = cheerio.load(html);
 			const scripts = $('script').each((_, el) => {
@@ -16,6 +17,6 @@ module.exports = makeFilemonger((srcDir$, destDir, { pattern, replacer }) =>
 			});
 
 			return helpers.writeFile(join(destDir, entrypoint), $.html());
-		});
-	})
+		})
+		.last()
 );

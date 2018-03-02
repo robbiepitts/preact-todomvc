@@ -1,23 +1,23 @@
-const { makeFilemonger, filtermonger } = require('@filemonger/main');
-const { inAppDir, inStylesDir, isHtml } = require('./helpers');
+const { make, merge } = require('@filemonger/main');
+const { filtermonger } = require('@filemonger/filtermonger');
 const htmlentrypointmonger = require('./htmlentrypointmonger');
 const pathrewritemonger = require('./pathrewritemonger');
-const movemonger = require('./movemonger');
 
-const appmonger = makeFilemonger((srcDir$, destDir, { entry, watch }) =>
-	htmlentrypointmonger(srcDir$, { entry, watch })
-		.multicast(
-			srcDir$ => filtermonger(srcDir$, { pattern: '**/*.js' }),
-			srcDir$ => filtermonger(srcDir$, { pattern: '**/*.css' }),
-			srcDir$ =>
-				filtermonger(srcDir$, { pattern: '**/*.html' }).bind(dir =>
-					pathrewritemonger(dir, {
+const appmonger = make((srcDir, destDir, { entry, watch }) =>
+	htmlentrypointmonger(srcDir, { entry, watch })
+		.bind(srcDir =>
+			merge(
+				filtermonger(srcDir, { pattern: '**/*.js' }),
+				filtermonger(srcDir, { pattern: '**/*.css' }),
+				filtermonger(srcDir, { pattern: '**/*.html' }).bind(srcDir =>
+					pathrewritemonger(srcDir, {
 						pattern: /\.scss$/,
 						replacer: '.css'
 					})
 				)
+			)
 		)
-		.unit(destDir)
+		.writeTo(destDir)
 );
 
 module.exports = appmonger;
