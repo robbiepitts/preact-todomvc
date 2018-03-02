@@ -4,8 +4,8 @@ const htmlentrypointmonger = require('./htmlentrypointmonger');
 const pathrewritemonger = require('./pathrewritemonger');
 const movemonger = require('./movemonger');
 
-const appmonger = makeFilemonger((srcDir$, destDir, { entry }) =>
-	htmlentrypointmonger(srcDir$, { entry })
+const appmonger = makeFilemonger((srcDir$, destDir, { entry, watch }) =>
+	htmlentrypointmonger(srcDir$, { entry, watch })
 		.multicast(
 			srcDir$ => filtermonger(srcDir$, { pattern: '**/*.js' }),
 			srcDir$ => filtermonger(srcDir$, { pattern: '**/*.css' }),
