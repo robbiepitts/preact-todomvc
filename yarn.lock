@@ -8,17 +8,18 @@
   dependencies:
     yargs "^11.0.0"
 
-"@filemonger/filtermonger@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@filemonger/filtermonger/-/filtermonger-0.5.0.tgz#755fac80c53f944786b5a34882ce33364b665e9a"
+"@filemonger/filtermonger@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@filemonger/filtermonger/-/filtermonger-0.5.2.tgz#ecba84ab568c7ecbe1f8eb9cd6b2b61394aea873"
   dependencies:
-    "@filemonger/main" "^0.5.0"
+    "@filemonger/main" "^0.5.2"
     "@filemonger/types" "^0.5.0"
     "@types/node" "^9.4.1"
+    rxjs "^5.5.6"
 
-"@filemonger/main@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@filemonger/main/-/main-0.5.0.tgz#fff84a88619352973281948254bf1ad9a6559933"
+"@filemonger/main@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@filemonger/main/-/main-0.5.2.tgz#c22b23d09b772a7fa3137a0a010d8132d0d38b5b"
   dependencies:
     "@filemonger/types" "^0.5.0"
     "@types/fs-extra" "^5.0.0"

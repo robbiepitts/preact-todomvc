@@ -1,12 +1,13 @@
-const { make, merge } = require('@filemonger/main');
+const fm = require('@filemonger/main');
 const { filtermonger } = require('@filemonger/filtermonger');
+const watch = require('./watch');
 const htmlentrypointmonger = require('./htmlentrypointmonger');
 const pathrewritemonger = require('./pathrewritemonger');
 
-const appmonger = make((srcDir, destDir, { entry, watch }) =>
-	htmlentrypointmonger(srcDir, { entry, watch })
+const buildmonger = fm.make((srcDir, destDir, { entry, refresh }) =>
+	htmlentrypointmonger(srcDir, { entry, refresh })
 		.bind(srcDir =>
-			merge(
+			fm.merge(
 				filtermonger(srcDir, { pattern: '**/*.js' }),
 				filtermonger(srcDir, { pattern: '**/*.css' }),
 				filtermonger(srcDir, { pattern: '**/*.html' }).bind(srcDir =>
@@ -18,6 +19,16 @@ const appmonger = make((srcDir, destDir, { entry, watch }) =>
 			)
 		)
 		.writeTo(destDir)
+);
+
+const appmonger = fm.make(
+	(srcDir, destDir, opts = { entry: 'index.html', watch: false }) =>
+		(opts.watch
+			? watch(srcDir, refresh =>
+					buildmonger(srcDir, { entry: opts.entry, refresh })
+			  )
+			: buildmonger(srcDir, { entry: opts.entry })
+		).writeTo(destDir)
 );
 
 module.exports = appmonger;

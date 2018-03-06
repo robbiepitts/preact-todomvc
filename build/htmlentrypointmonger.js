@@ -1,57 +1,63 @@
 const { make, helpers } = require('@filemonger/main');
 const { filtermonger } = require('@filemonger/filtermonger');
-const { readFileSync, readdirSync } = require('fs');
-const { join, relative } = require('path');
+const { readFile, readdirSync } = require('fs');
+const { join, relative, extname } = require('path');
 const cheerio = require('cheerio');
 const { Observable, Subject } = require('rxjs');
-const watchDir = require('./watch-dir');
 const rollupmonger = require('./rollupmonger');
 const sassmonger = require('./sassmonger');
 
-module.exports = make((srcDir, destDir, { entry, watch }) => {
-	const $ = cheerio.load(readFileSync(join(srcDir, entry)).toString());
-	const scripts = $('script')
-		.map((_, el) => el.attribs['src'])
-		.toArray();
-	const stylesheets = $("link[rel='stylesheet']")
-		.map((_, el) => el.attribs['href'])
-		.toArray();
-	const processHTML = () =>
-		filtermonger(srcDir, { pattern: entry }).writeTo(destDir);
-	const processJS = () =>
-		Observable.forkJoin(
-			scripts.map(script =>
-				rollupmonger(srcDir, { entry: script }).writeTo(destDir)
-			)
-		);
-	const processSCSS = () =>
-		Observable.forkJoin(
-			stylesheets.map(stylesheet =>
-				sassmonger(srcDir, { entry: stylesheet }).writeTo(destDir)
-			)
-		);
-	const startWatch = () =>
-		watchDir(srcDir)
-			.filter(files => hasJS(files) || hasSCSS(files))
-			.do(files => console.log('Files changed:', ...files))
-			.do(() => console.log('Rebuilding'))
-			.do(() => console.time('Done'))
-			.multicast(
-				() => new Subject(),
-				files$ =>
-					Observable.combineLatest(
-						files$.filter(hasJS).mergeMap(processJS),
-						files$.filter(hasSCSS).mergeMap(processSCSS)
+module.exports = make(
+	(srcDir, destDir, { entry = 'index.html', refresh = [entry] }) => {
+		const entrypoint$ = Observable.bindNodeCallback(readFile)(
+			join(srcDir, entry)
+		)
+			.map(buf => buf.toString())
+			.map(html => cheerio.load(html))
+			.mergeMap($ =>
+				Observable.merge(
+					Observable.of(entry),
+					Observable.from(
+						$('script')
+							.map((_, el) => el.attribs['src'])
+							.toArray()
+					),
+					Observable.from(
+						$("link[rel='stylesheet']")
+							.map((_, el) => el.attribs['href'])
+							.toArray()
 					)
-			)
-			.do(() => console.timeEnd('Done'));
+				)
+			);
+		const refresh$ = hasHTML(refresh)
+			? entrypoint$
+			: entrypoint$.filter(entrypoint =>
+					refresh.map(extname).includes(extname(entrypoint))
+			  );
 
-	if (watch) {
-		return Observable.combineLatest(processHTML(), startWatch());
+		return refresh$.multicast(
+			() => new Subject(),
+			refresh$ =>
+				Observable.merge(
+					refresh$
+						.filter(asset => extname(asset) === '.html')
+						.mergeMap(entry =>
+							filtermonger(srcDir, { pattern: entry }).writeTo(destDir)
+						),
+					refresh$
+						.filter(asset => extname(asset) === '.js')
+						.mergeMap(script =>
+							rollupmonger(srcDir, { entry: script }).writeTo(destDir)
+						),
+					refresh$
+						.filter(asset => extname(asset) === '.scss')
+						.mergeMap(stylesheet =>
+							sassmonger(srcDir, { entry: stylesheet }).writeTo(destDir)
+						)
+				).last()
+		);
 	}
-
-	return Observable.forkJoin(processHTML(), processJS(), processSCSS());
-});
+);
 
 function hasHTML(files) {
 	return files.filter(file => file.slice(-5) === '.html').length > 0;

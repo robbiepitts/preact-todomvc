@@ -3,7 +3,7 @@ const { Observable } = require('rxjs');
 const { rollup } = require('rollup');
 const { join, resolve, isAbsolute } = require('path');
 
-module.exports = make((srcDir, destDir, { entry }) => {
+module.exports = make((srcDir, destDir, { entry = 'index.js' }) => {
 	const rollupConfigPath = resolve(process.cwd(), 'rollup.config.js');
 	const config = rollup({
 		input: rollupConfigPath,

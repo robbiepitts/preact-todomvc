@@ -1,5 +1,6 @@
 const { make, helpers } = require('@filemonger/main');
 const cheerio = require('cheerio');
+const { Observable } = require('rxjs');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
@@ -18,5 +19,6 @@ module.exports = make((srcDir, destDir, { pattern, replacer }) =>
 
 			return helpers.writeFile(join(destDir, entrypoint), $.html());
 		})
+		.concat(Observable.of(null))
 		.last()
 );

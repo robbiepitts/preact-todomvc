@@ -4,8 +4,7 @@ const { readdirSync } = require('fs');
 const { Observable, Subject } = require('rxjs');
 const watchman = require('fb-watchman');
 
-module.exports = function watchDir(srcDir) {
-	const resolvedSrcDir = resolve(process.cwd(), srcDir);
+module.exports = function watch(watchDir, factory) {
 	const client = new watchman.Client();
 	const capabilityCheck = Observable.bindNodeCallback(
 		client.capabilityCheck.bind(client)
@@ -26,13 +25,21 @@ module.exports = function watchDir(srcDir) {
 		);
 	};
 
-	return capabilityCheck({ required: ['relative_root'] })
-		.mergeMap(() => command(['watch-project', resolvedSrcDir]))
-		.mergeMap(({ watch, relative_path }) =>
-			makeSubscription(watch, relative_path).map(ev => ev.files)
-		)
-		.catch(err => {
-			client.end();
-			throw err;
-		});
+	return make((_, destDir) =>
+		capabilityCheck({ required: ['relative_root'] })
+			.mergeMap(() => command(['watch-project', resolve(watchDir)]))
+			.mergeMap(({ watch, relative_path }) =>
+				makeSubscription(watch, relative_path).map(ev => ev.files)
+			)
+			.catch(err => {
+				client.end();
+				throw err;
+			})
+			.do(files => console.log('Files changed:', ...files))
+			.do(() => console.log('Rebuilding'))
+			.do(() => console.time('Done'))
+			.map(factory)
+			.mergeMap(monger => monger.writeTo(destDir))
+			.do(() => console.timeEnd('Done'))
+	)();
 };
