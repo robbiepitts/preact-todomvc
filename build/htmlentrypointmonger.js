@@ -4,7 +4,8 @@ const { readFile, readdirSync } = require('fs');
 const { join, relative, extname } = require('path');
 const cheerio = require('cheerio');
 const { Observable, Subject } = require('rxjs');
-const rollupmonger = require('./rollupmonger');
+const babelmonger = require('./babelmonger');
+const webpackmonger = require('./webpackmonger');
 const sassmonger = require('./sassmonger');
 
 module.exports = make(
@@ -44,11 +45,11 @@ module.exports = make(
 						.mergeMap(entry =>
 							filtermonger(srcDir, { pattern: entry }).writeTo(destDir)
 						),
-					refresh$
-						.filter(asset => extname(asset) === '.js')
-						.mergeMap(script =>
-							rollupmonger(srcDir, { entry: script }).writeTo(destDir)
-						),
+					refresh$.filter(asset => extname(asset) === '.js').mergeMap(script =>
+						babelmonger(srcDir)
+							.bind(srcDir => webpackmonger(srcDir, { entry: script }))
+							.writeTo(destDir)
+					),
 					refresh$
 						.filter(asset => extname(asset) === '.scss')
 						.mergeMap(stylesheet =>

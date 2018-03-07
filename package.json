@@ -43,7 +43,8 @@
 		"rollup-plugin-commonjs": "^5.0.5",
 		"rollup-plugin-node-resolve": "^2.0.0",
 		"rollup-plugin-uglify": "^3.0.0",
-		"uglify-js": "^2.7.5"
+		"uglify-js": "^2.7.5",
+		"webpack": "^4.1.0"
 	},
 	"dependencies": {
 		"preact": "^7.1.0",

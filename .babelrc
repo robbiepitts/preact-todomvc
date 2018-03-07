@@ -1,4 +1,4 @@
 {
 	"presets": [["es2015", { "loose": true, "modules": false }], "stage-0"],
-	"plugins": ["external-helpers", ["transform-react-jsx", { "pragma": "h" }]]
+	"plugins": [["transform-react-jsx", { "pragma": "h" }]]
 }
