@@ -9,6 +9,7 @@ const buildmonger = fm.make((srcDir, destDir, { entry, refresh }) =>
 		.bind(srcDir =>
 			fm.merge(
 				filtermonger(srcDir, { pattern: '**/*.js' }),
+				filtermonger(srcDir, { pattern: '**/*.js.map' }),
 				filtermonger(srcDir, { pattern: '**/*.css' }),
 				filtermonger(srcDir, { pattern: '**/*.html' }).bind(srcDir =>
 					pathrewritemonger(srcDir, {

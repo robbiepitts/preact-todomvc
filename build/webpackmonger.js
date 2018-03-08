@@ -36,11 +36,13 @@ module.exports = make((srcDir, destDir, configOverrides = {}) => {
 				: stats.compilation.errors && stats.compilation.errors.length > 0
 					? stats.compilation.errors
 					: null;
+
 			if (errors) {
 				errors.forEach(error => {
 					subscriber.error(error);
 				});
 			}
+
 			subscriber.next();
 			subscriber.complete();
 		});
