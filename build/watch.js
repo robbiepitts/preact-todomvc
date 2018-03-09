@@ -1,6 +1,5 @@
 const { make, helpers } = require('@filemonger/main');
 const { join, parse, relative, resolve } = require('path');
-const { readdirSync } = require('fs');
 const { Observable, Subject } = require('rxjs');
 const watchman = require('fb-watchman');
 

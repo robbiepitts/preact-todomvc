@@ -10,4 +10,6 @@ app.use(compression({ threshold: 0 }));
 app.use(express.static(dist));
 app.listen(3000, () => console.log('http://localhost:3000'));
 
-mongerfile.run(dist);
+mongerfile.run(dist, err => {
+	if (err) throw err;
+});

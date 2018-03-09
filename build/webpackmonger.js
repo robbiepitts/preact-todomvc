@@ -4,8 +4,11 @@ const { Observable } = require('rxjs');
 const webpack = require('webpack');
 
 module.exports = make((srcDir, destDir, configOverrides = {}) => {
+	console.time('webpack');
+
 	const configPath = resolve('webpack.config.js');
 	const config = require(configPath);
+	const entry = configOverrides.entry || config.entry;
 	const normalizeEntry = entry => {
 		if (typeof entry === 'object' && entry.length) {
 			return entry.map(e => resolve(srcDir, entry));
@@ -22,10 +25,10 @@ module.exports = make((srcDir, destDir, configOverrides = {}) => {
 	};
 	const normalizedConfig = {
 		...config,
-		entry: normalizeEntry(configOverrides.entry || config.entry),
+		entry: normalizeEntry(entry),
 		output: {
-			path: join(destDir, dirname(config.entry)),
-			filename: parse(config.entry).base
+			path: join(destDir, dirname(entry)),
+			filename: parse(entry).base
 		}
 	};
 
@@ -46,5 +49,9 @@ module.exports = make((srcDir, destDir, configOverrides = {}) => {
 			subscriber.next();
 			subscriber.complete();
 		});
-	}).last();
+	})
+		.last()
+		.do(() => {
+			console.timeEnd('webpack');
+		});
 });

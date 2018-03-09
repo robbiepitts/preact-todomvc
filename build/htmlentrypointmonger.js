@@ -1,6 +1,6 @@
 const { make, helpers } = require('@filemonger/main');
 const { filtermonger } = require('@filemonger/filtermonger');
-const { readFile, readdirSync } = require('fs');
+const { readFile } = require('fs');
 const { join, relative, extname } = require('path');
 const cheerio = require('cheerio');
 const { Observable, Subject } = require('rxjs');

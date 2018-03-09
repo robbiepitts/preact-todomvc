@@ -1,35 +1,45 @@
 const fm = require('@filemonger/main');
 const { filtermonger } = require('@filemonger/filtermonger');
 const watch = require('./watch');
-const htmlentrypointmonger = require('./htmlentrypointmonger');
-const pathrewritemonger = require('./pathrewritemonger');
+const babelmonger = require('./babelmonger');
+const webpackmonger = require('./webpackmonger');
+const sassmonger = require('./sassmonger');
+const { join, extname } = require('path');
+const { Observable } = require('rxjs');
 
-const buildmonger = fm.make((srcDir, destDir, { entry, refresh }) =>
-	htmlentrypointmonger(srcDir, { entry, refresh })
-		.bind(srcDir =>
-			fm.merge(
-				filtermonger(srcDir, { pattern: '**/*.js' }),
-				filtermonger(srcDir, { pattern: '**/*.js.map' }),
-				filtermonger(srcDir, { pattern: '**/*.css' }),
-				filtermonger(srcDir, { pattern: '**/*.html' }).bind(srcDir =>
-					pathrewritemonger(srcDir, {
-						pattern: /\.scss$/,
-						replacer: '.css'
-					})
-				)
+const uniq = arr => Array.from(new Set(arr));
+
+const buildmonger = fm.make((srcDir, destDir, { refresh }) => {
+	const mongers = new Map([
+		['.html', filtermonger(srcDir, { pattern: 'index.html' })],
+		['.scss', sassmonger(join(srcDir, 'styles'), { file: 'index.scss' })],
+		[
+			'.js',
+			babelmonger(join(srcDir, 'app')).bind(srcDir =>
+				webpackmonger(srcDir, { entry: 'index.js' })
 			)
-		)
-		.writeTo(destDir)
-);
+		]
+	]);
+	const reducer = (memo, nextMonger) =>
+		Observable.merge(
+			memo,
+			nextMonger ? nextMonger.writeTo(destDir) : Observable.of(null)
+		);
 
-const appmonger = fm.make(
-	(srcDir, destDir, opts = { entry: 'index.html', watch: false }) =>
-		(opts.watch
-			? watch(srcDir, refresh =>
-					buildmonger(srcDir, { entry: opts.entry, refresh })
-			  )
-			: buildmonger(srcDir, { entry: opts.entry })
-		).writeTo(destDir)
+	return (refresh
+		? uniq(refresh.map(extname).map(ext => mongers.get(ext))).reduce(
+				reducer,
+				Observable.of(null)
+		  )
+		: Array.from(mongers.values()).reduce(reducer, Observable.of(null))
+	).last();
+});
+
+const appmonger = fm.make((srcDir, destDir, opts = { watch: false }) =>
+	(opts.watch
+		? watch(srcDir, refresh => buildmonger(srcDir, { refresh }))
+		: buildmonger(srcDir)
+	).writeTo(destDir)
 );
 
 module.exports = appmonger;
